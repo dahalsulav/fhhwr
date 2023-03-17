@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FHHWR{% endblock %}</title>
+    <!-- {% block extra_css %}{% endblock %} -->
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'users:base' %}">Home</a></li>
+                <li><a href="{% url 'users:login' %}">Login</a></li>
+                <li><a href="{% url 'users:logout' %}">Logout</a></li>
+                <li><a href="{% url 'users:customer_registration' %}">Customer Registration</a></li>
+                <li><a href="{% url 'users:worker_registration' %}">Worker Registration</a></li>
+                <li><a href="{% url 'users:profile' %}">Profile</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; Freelance House Hold Work Recommender</p>
+    </footer>
+    <!-- {% block extra_js %}{% endblock %} -->
+</body>
+
+</html>
