@@ -72,15 +72,20 @@ class CustomerUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("users:profile")
 
     def get_object(self):
-        return self.request.user.customer
+        try:
+            return self.request.user.customer
+        except Customer.DoesNotExist:
+            return None
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({"instance": self.get_object()})
         return kwargs
 
-
-# users/views.py
+    def form_valid(self, form):
+        print("Customer:", form.instance)
+        print("User:", form.instance.user)
+        return super().form_valid(form)
 
 
 class WorkerRegistrationView(CreateView):

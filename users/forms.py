@@ -75,9 +75,12 @@ class CustomerUpdateForm(forms.ModelForm):
         fields = ("location", "profile_picture")
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop("instance").user
+        customer = kwargs.pop("instance")
+        user = customer.user
         super(CustomerUpdateForm, self).__init__(*args, **kwargs)
         self.fields["phone_number"].initial = user.phone_number
+        self.fields["location"].initial = customer.location
+        self.fields["profile_picture"].initial = customer.profile_picture
 
     def save(self, commit=True):
         instance = super(CustomerUpdateForm, self).save(commit=False)
