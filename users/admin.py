@@ -65,7 +65,14 @@ class UserAdmin(BaseUserAdmin):
         ),
     )
 
-    search_fields = ("email", "first_name", "last_name")
+    search_fields = (
+        "email",
+        "first_name",
+        "last_name",
+        "customer__location",
+        "worker__location",
+        "worker__skills",
+    )
     ordering = ("email",)
     filter_horizontal = (
         "groups",
@@ -73,9 +80,32 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ("user", "location", "email_verified")
+    search_fields = ("user__email", "user__first_name", "user__last_name", "location")
+
+
+class WorkerAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "location",
+        "skills",
+        "hourly_rate",
+        "email_verified",
+        "is_available",
+    )
+    search_fields = (
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "location",
+        "skills",
+    )
+
+
 admin.site.register(User, UserAdmin)
-admin.site.register(Customer)
-admin.site.register(Worker)
+admin.site.register(Customer, CustomerAdmin)
+admin.site.register(Worker, WorkerAdmin)
 
 
 @admin.register(HourlyRateApproval)

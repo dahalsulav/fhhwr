@@ -73,9 +73,12 @@ class CustomerUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self):
         try:
-            return self.request.user.customer
+            customer = self.request.user.customer
+            if customer.user:
+                return customer
         except Customer.DoesNotExist:
-            return None
+            pass
+        return None
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -95,27 +98,33 @@ class WorkerRegistrationView(CreateView):
     success_url = reverse_lazy("users:login")
 
     def form_valid(self, form):
-        user = form.save(commit=False)
-        user.is_active = False
-        user.save()
+        response = super().form_valid(form)
 
-        worker = form.save_worker(user)
-        hourly_rate = form.cleaned_data.get("hourly_rate")
-
-        # Create HourlyRateApproval instance for admin approval
-        hourly_rate_approval = HourlyRateApproval(
-            worker=worker, hourly_rate=hourly_rate
+        # Send email to the worker with the activation link
+        mail_subject = "Activate your account"
+        message = render_to_string(
+            "users/activation_email.txt",
+            {
+                "user": self.object,
+                "domain": self.request.META["HTTP_HOST"],
+                "uid": urlsafe_base64_encode(force_bytes(self.object.pk)),
+                "token": default_token_generator.make_token(self.object),
+            },
         )
-        hourly_rate_approval.save()
-
-        # Optionally, send a notification email to the admin (not implemented)
+        to_email = form.cleaned_data.get("email")
+        send_mail(
+            mail_subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [to_email],
+            fail_silently=False,
+        )
 
         messages.success(
             self.request,
-            "Your account has been created successfully. "
-            "You will be able to log in after your hourly rate is approved by the admin.",
+            "Please confirm your email address to complete the registration.",
         )
-        return super().form_valid(form)
+        return response
 
 
 class WorkerUpdateView(LoginRequiredMixin, UpdateView):
