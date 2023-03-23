@@ -1,0 +1,45 @@
+{% extends 'users/base.html' %} {% load static %} {% block content %}
+<h1>Worker Search Results</h1>
+<div class="container mt-4">
+  <div class="row">
+    {% for worker in workers %}
+    <div class="col-md-4 mb-4">
+      <div class="card">
+        {% if worker.profile_picture %}
+        <img
+          class="card-img-top"
+          src="{{ worker.profile_picture.url }}"
+          alt="{{ worker.get_full_name }}"
+        />
+        {% else %}
+        <img
+          class="card-img-top"
+          src="{% static 'users/images/default_profile_picture.png' %}"
+          alt="{{ worker.get_full_name }}"
+        />
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ worker.get_full_name }}</h5>
+          {% if worker.hourly_rate %}
+          <p class="card-text">
+            <strong>Hourly rate:</strong> ${{ worker.hourly_rate }}
+          </p>
+          {% endif %} {% if worker.skills %}
+          <p class="card-text"><strong>Skills:</strong> {{ worker.skills }}</p>
+          {% endif %}
+          <a
+            href="{% url 'users:worker_profile' worker.user_id %}"
+            class="btn btn-primary"
+            >View Profile</a
+          >
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-md-12">
+      <p>No workers found.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
