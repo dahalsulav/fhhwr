@@ -33,7 +33,7 @@ urlpatterns = [
         name="activate_worker",
     ),
     path(
-        "worker-profile/<slug:username>/",
+        "worker-profile/<int:pk>/",
         views.WorkerProfileView.as_view(),
         name="worker_profile",
     ),

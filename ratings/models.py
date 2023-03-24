@@ -23,6 +23,7 @@ class Rating(models.Model):
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         choices=RATING_CHOICES,
+        default=1,
     )
     comment = models.TextField(blank=True)
     created_time = models.DateTimeField(auto_now_add=True)

@@ -418,17 +418,13 @@
             />
             <div class="card-body">
               <h5 class="card-title">{{ worker.user.username }}</h5>
-              <p class="card-text">
-                Skills: {{ worker.skills.all|join:", " }}
-              </p>
+              <p class="card-text">Skills: {{ worker.skills }}</p>
               <p class="card-text">
                 Hourly Rate: Rs. {{ worker.hourly_rate }}
               </p>
               <p class="card-text">Rating: {{ worker.average_rating }}</p>
-              <a
-                href="{% url 'users:worker_profile' worker.user.username %}"
-                class="btn btn-info"
-                >View Profile</a
+              <a href="{% url 'users:worker_profile' worker.pk %}"
+                >Worker Profile</a
               >
             </div>
           </div>

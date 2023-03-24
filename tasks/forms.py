@@ -8,7 +8,7 @@ from users.models import Worker
 class TaskCreateForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ["title", "description", "start_time", "end_time"]
+        fields = ["title", "description", "start_time", "end_time", "location"]
         widgets = {
             "start_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "end_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
@@ -18,42 +18,45 @@ class TaskCreateForm(forms.ModelForm):
             "description": _("Description"),
             "start_time": _("Start Time"),
             "end_time": _("End Time"),
+            "location": _("Location"),
         }
 
-    def __init__(self, worker, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.worker = worker
+        self.fields["start_time"].input_formats = ["%Y-%m-%dT%H:%M"]
+        self.fields["end_time"].input_formats = ["%Y-%m-%dT%H:%M"]
+        self.fields["start_time"].help_text = _(
+            "Enter date and time in format: YYYY-MM-DD HH:MM"
+        )
+        self.fields["end_time"].help_text = _(
+            "Enter date and time in format: YYYY-MM-DD HH:MM"
+        )
+        self.fields["location"].widget.attrs.update(
+            {"placeholder": _("Enter a location")}
+        )
+
+        if self.instance.worker:
+            self.fields["start_time"].widget.attrs.update(
+                {
+                    "min": self.instance.worker.get_local_time().strftime(
+                        "%Y-%m-%dT%H:%M"
+                    )
+                }
+            )
+            self.fields["end_time"].widget.attrs.update(
+                {
+                    "min": self.instance.worker.get_local_time().strftime(
+                        "%Y-%m-%dT%H:%M"
+                    )
+                }
+            )
 
     def clean(self):
         cleaned_data = super().clean()
         start_time = cleaned_data.get("start_time")
         end_time = cleaned_data.get("end_time")
-
-        if start_time and end_time:
-            if start_time >= end_time:
-                raise ValidationError(_("Start time must be before end time."))
-
-            # Calculate payment
-            time_delta = end_time - start_time
-            hours = time_delta.total_seconds() / 3600
-            payment = round(hours * self.worker.hourly_rate, 2)
-            cleaned_data["payment"] = payment
-
-            # Check worker availability
-            overlapping_tasks = Task.objects.filter(
-                worker=self.worker,
-                start_time__lt=end_time,
-                end_time__gt=start_time,
-                status__in=["requested", "in-progress"],
-            )
-
-            if overlapping_tasks.exists():
-                raise ValidationError(
-                    _(
-                        "This worker is not available at the requested time. Please choose a different time."
-                    )
-                )
-
+        if start_time and end_time and start_time >= end_time:
+            raise forms.ValidationError(_("End time must be after start time."))
         return cleaned_data
 
 

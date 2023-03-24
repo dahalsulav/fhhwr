@@ -229,36 +229,28 @@ class WorkerProfileView(LoginRequiredMixin, DetailView):
     model = Worker
     template_name = "users/worker_profile.html"
 
+    def get_object(self):
+        pk = self.kwargs.get("pk")
+        return get_object_or_404(Worker, pk=pk)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         worker = self.get_object()
 
         if self.request.method == "POST":
-            task_create_form = TaskCreateForm(self.request.POST)
-            task_request_form = TaskRequestCreateForm(
-                initial={"worker": worker}, data=self.request.POST
-            )
-
-            if task_request_form.is_valid() and task_create_form.is_valid():
-                task = task_create_form.save(commit=False)
+            form = TaskCreateForm(worker, self.request.POST)
+            if form.is_valid():
+                task = form.save(commit=False)
                 task.worker = worker
                 task.customer = self.request.user.customer
                 task.save()
-
-                task_request = task_request_form.save(commit=False)
-                task_request.task = task
-                task_request.worker = worker
-                task_request.save()
-
                 messages.success(self.request, _("Task created successfully."))
                 return redirect("users:dashboard")
         else:
-            task_create_form = TaskCreateForm()
-            task_request_form = TaskRequestCreateForm(initial={"worker": worker})
+            form = TaskCreateForm(worker)
 
         context["worker"] = worker
-        context["task_create_form"] = task_create_form
-        context["task_request_form"] = task_request_form
+        context["form"] = form
         return context
 
 
