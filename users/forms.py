@@ -81,26 +81,37 @@ class WorkerRegistrationForm(UserCreationForm):
 
 
 class CustomerUpdateForm(forms.ModelForm):
+    email = forms.EmailField(disabled=True)
     phone_number = forms.CharField(max_length=15, required=True)
+    location = forms.CharField(max_length=255, required=True)
 
     class Meta:
         model = Customer
-        fields = ("location", "profile_picture")
+        fields = (
+            "location",
+            "profile_picture",
+        )
 
     def __init__(self, *args, **kwargs):
-        customer = kwargs.pop("instance")
-        user = customer.user
-        super(CustomerUpdateForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        user = self.instance.user
+        self.fields["email"].initial = user.email
         self.fields["phone_number"].initial = user.phone_number
-        self.fields["location"].initial = customer.location
-        self.fields["profile_picture"].initial = customer.profile_picture
+        self.fields["location"].initial = self.instance.location
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data["phone_number"]
+        if not phone_number.isdigit():
+            raise ValidationError("Invalid phone number.")
+        return phone_number
 
     def save(self, commit=True):
-        instance = super(CustomerUpdateForm, self).save(commit=False)
-        instance.user.phone_number = self.cleaned_data["phone_number"]
+        instance = super().save(commit=False)
+        instance.location = self.cleaned_data["location"]
         if commit:
-            instance.user.save()
             instance.save()
+            instance.user.phone_number = self.cleaned_data["phone_number"]
+            instance.user.save()
         return instance
 
 
