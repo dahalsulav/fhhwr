@@ -4,9 +4,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.mail import send_mail
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import View
@@ -21,10 +22,14 @@ from .forms import (
 from .models import User, Customer, Worker, HourlyRateApproval
 from .tokens import account_activation_token
 from django.http import HttpResponseRedirect
+from tasks.models import Task
+from django.contrib.auth.decorators import login_required
+from tasks.forms import TaskCreateForm
 
 
 def base_view(request):
-    return render(request, "users/base.html")
+    workers = Worker.objects.filter(is_available=True)
+    return render(request, "users/base.html", {"workers": workers})
 
 
 class CustomerRegistrationView(CreateView):
@@ -218,3 +223,64 @@ class UserProfileView(LoginRequiredMixin, DetailView):
         elif user.is_worker:
             context["worker"] = user.worker
         return context
+
+
+class WorkerProfileView(LoginRequiredMixin, DetailView):
+    model = Worker
+    template_name = "users/worker_profile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        worker = self.get_object()
+
+        if self.request.method == "POST":
+            task_create_form = TaskCreateForm(self.request.POST)
+            task_request_form = TaskRequestCreateForm(
+                initial={"worker": worker}, data=self.request.POST
+            )
+
+            if task_request_form.is_valid() and task_create_form.is_valid():
+                task = task_create_form.save(commit=False)
+                task.worker = worker
+                task.customer = self.request.user.customer
+                task.save()
+
+                task_request = task_request_form.save(commit=False)
+                task_request.task = task
+                task_request.worker = worker
+                task_request.save()
+
+                messages.success(self.request, _("Task created successfully."))
+                return redirect("users:dashboard")
+        else:
+            task_create_form = TaskCreateForm()
+            task_request_form = TaskRequestCreateForm(initial={"worker": worker})
+
+        context["worker"] = worker
+        context["task_create_form"] = task_create_form
+        context["task_request_form"] = task_request_form
+        return context
+
+
+@login_required
+def requested_tasks(request):
+    tasks = Task.objects.filter(customer=request.user.customer, status="requested")
+    return render(request, "users/requested_tasks.html", {"tasks": tasks})
+
+
+@login_required
+def in_progress_tasks(request):
+    tasks = Task.objects.filter(worker=request.user.worker, status="in-progress")
+    return render(request, "users/in_progress_tasks.html", {"tasks": tasks})
+
+
+@login_required
+def completed_tasks(request):
+    tasks = Task.objects.filter(worker=request.user.worker, status="completed")
+    return render(request, "users/completed_tasks.html", {"tasks": tasks})
+
+
+@login_required
+def rejected_tasks(request):
+    tasks = Task.objects.filter(worker=request.user.worker, status="rejected")
+    return render(request, "users/rejected_tasks.html", {"tasks": tasks})

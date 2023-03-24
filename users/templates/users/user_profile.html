@@ -64,6 +64,46 @@
           {% endif %}
         </tbody>
       </table>
+      <!-- Buttons for tasks -->
+      {% if customer %}
+      <div class="text-center">
+        <a href="{% url 'users:requested_tasks' %}" class="btn btn-primary m-2"
+          >Requested Tasks</a
+        >
+        <a href="{% url 'tasks:task_list' %}" class="btn btn-primary m-2"
+          >In Progress Tasks</a
+        >
+        <a
+          href="{% url 'tasks:task_list' %}?status=completed"
+          class="btn btn-primary m-2"
+          >Completed Tasks</a
+        >
+        <a
+          href="{% url 'tasks:task_list' %}?status=rejected"
+          class="btn btn-primary m-2"
+          >Rejected Tasks</a
+        >
+      </div>
+      {% elif worker %}
+      <div class="text-center">
+        <a
+          href="{% url 'tasks:taskrequest-list' %}"
+          class="btn btn-primary m-2"
+          >Requested Tasks</a
+        >
+        <a
+          href="{% url 'users:in_progress_tasks' %}"
+          class="btn btn-primary m-2"
+          >In Progress Tasks</a
+        >
+        <a href="{% url 'users:completed_tasks' %}" class="btn btn-primary m-2"
+          >Completed Tasks</a
+        >
+        <a href="{% url 'users:rejected_tasks' %}" class="btn btn-primary m-2"
+          >Rejected Tasks</a
+        >
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>

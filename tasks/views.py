@@ -57,19 +57,28 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 class TaskRequestCreateView(LoginRequiredMixin, CreateView):
     model = TaskRequest
     form_class = TaskRequestCreateForm
-    template_name = "tasks/taskrequest_create.html"
+    template_name = "tasks/task_request_create.html"
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["task"] = self.kwargs["task_id"]
+        return initial
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["worker"] = self.request.user.worker
+        return kwargs
 
     def form_valid(self, form):
-        task_id = self.kwargs.get("pk")
-        task = get_object_or_404(Task, pk=task_id)
-        worker = form.cleaned_data.get("worker")
         task_request = form.save(commit=False)
-        task_request.task = task
-        task_request.worker = worker
-        task_request.requested_time = datetime.now()
-        task_request.status = "requested"
+        task_request.requester = self.request.user.worker
+        task_request.status = "pending"
         task_request.save()
-        return redirect("tasks:task_detail", pk=task_id)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        messages.success(self.request, "Task request created successfully.")
+        return reverse_lazy("tasks:task_detail", kwargs={"pk": self.kwargs["task_id"]})
 
 
 class TaskRequestListView(LoginRequiredMixin, ListView):

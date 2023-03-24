@@ -32,7 +32,10 @@ class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     location = models.CharField(max_length=255)
     email_verified = models.BooleanField(default=False)
-    profile_picture = models.ImageField(upload_to="profile_pictures/", default='https://cdn4.iconfinder.com/data/icons/small-n-flat/24/user-512.png')
+    profile_picture = models.ImageField(
+        upload_to="profile_pictures/",
+        default="https://cdn4.iconfinder.com/data/icons/small-n-flat/24/user-512.png",
+    )
 
 
 class Worker(models.Model):
@@ -42,7 +45,10 @@ class Worker(models.Model):
     hourly_rate = models.FloatField()
     email_verified = models.BooleanField(default=False)
     is_available = models.BooleanField(default=True)
-    profile_picture = models.ImageField(upload_to="profile_pictures/", default='https://cdn4.iconfinder.com/data/icons/small-n-flat/24/user-512.png')
+    profile_picture = models.ImageField(
+        upload_to="profile_pictures/",
+        default="https://cdn4.iconfinder.com/data/icons/small-n-flat/24/user-512.png",
+    )
 
 
 class HourlyRateApproval(models.Model):

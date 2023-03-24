@@ -32,4 +32,13 @@ urlpatterns = [
         views.ActivateWorkerView.as_view(),
         name="activate_worker",
     ),
+    path(
+        "worker-profile/<slug:username>/",
+        views.WorkerProfileView.as_view(),
+        name="worker_profile",
+    ),
+    path("requested-tasks/", views.requested_tasks, name="requested_tasks"),
+    path("in-progress-tasks/", views.in_progress_tasks, name="in_progress_tasks"),
+    path("completed-tasks/", views.completed_tasks, name="completed_tasks"),
+    path("rejected-tasks/", views.rejected_tasks, name="rejected_tasks"),
 ]
