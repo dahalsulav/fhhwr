@@ -12,7 +12,6 @@ from tasks.forms import (
     TaskRequestCreateForm,
     TaskRequestUpdateForm,
     TaskUpdateForm,
-    WorkerSearchForm,
 )
 from tasks.models import Task, TaskRequest
 from users.models import Worker
@@ -110,32 +109,3 @@ class TaskRequestUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
         task_request.save()
         messages.success(self.request, "Task request updated successfully")
         return redirect("tasks:taskrequest-list")
-
-
-class WorkerSearchResultsView(LoginRequiredMixin, FormView, ListView):
-    login_url = "users:login"  # Change this to the URL of your login page
-    template_name = "users/worker_search_results.html"
-    form_class = WorkerSearchForm
-    context_object_name = "workers"
-
-    def get_queryset(self):
-        query = self.request.GET.get("query")
-        if query:
-            search_words = query.split()
-            workers = Worker.objects.filter(
-                Q(skills__name__icontains=search_words[0]), is_available=True
-            )
-            for word in search_words[1:]:
-                workers |= Worker.objects.filter(Q(skills__name__icontains=word))
-            print("Workers:", workers)
-            return workers
-        else:
-            return Worker.objects.none()
-
-    def form_valid(self, form):
-        context = self.get_context_data()
-        context["workers"] = self.get_queryset()
-        return self.render_to_response(context)
-
-    def form_invalid(self, form):
-        return self.render_to_response(self.get_context_data())

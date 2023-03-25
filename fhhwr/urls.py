@@ -5,7 +5,7 @@ from django.urls import path, include
 from users import views
 
 urlpatterns = [
-    path("", views.base_view, name="base"),
+    path("", views.base_view, name="home"),
     path("admin/", admin.site.urls),
     path("users/", include("users.urls", namespace="users")),
     path("tasks/", include("tasks.urls", namespace="tasks")),

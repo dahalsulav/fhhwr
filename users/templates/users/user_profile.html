@@ -2,7 +2,11 @@
 <div class="container">
   <div class="row">
     <div class="col-md-6 offset-md-3">
-      <h2 class="text-center">User Profile</h2>
+      {% if customer %}
+      <h2 class="text-center">Your Profile(Customer)</h2>
+      {% elif worker %}
+      <h2 class="text-center">Your Profile(Worker)</h2>
+      {% endif %}
       <table class="table">
         <tbody>
           <tr>

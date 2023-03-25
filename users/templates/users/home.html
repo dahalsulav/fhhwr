@@ -1,0 +1,31 @@
+{% extends 'users/base.html' %} {% block content %}
+<!-- Recommendation of worker Starts here -->
+<div class="container my-2">
+  <h1 style="font-size: 32px" class="hire mt-5">You May Like To Hire</h1>
+  <div class="row">
+    {% for worker in workers %}
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <img
+          src="{{ worker.profile_picture.url }}"
+          class="card-img-top"
+          alt="{{ worker.user.username }}"
+        />
+        <div class="card-body">
+          <h5 class="card-title">{{ worker.user.username }}</h5>
+          <p class="card-text">Skills: {{ worker.skills }}</p>
+          <p class="card-text">Hourly Rate: Rs. {{ worker.hourly_rate }}</p>
+          <p class="card-text">Rating: {{ worker.average_rating }}</p>
+          <a href="{% url 'users:worker_profile' worker.pk %}"
+            >Worker Profile</a
+          >
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>No workers available.</p>
+    {% endfor %}
+  </div>
+</div>
+<!-- Recommendation of worker Ends here -->
+{% endblock %}

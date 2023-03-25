@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import View
-from django.views.generic import CreateView, UpdateView, DetailView
+from django.views.generic import CreateView, UpdateView, DetailView, ListView
 from django.contrib import messages
 from .forms import (
     CustomerRegistrationForm,
@@ -29,7 +29,7 @@ from tasks.forms import TaskCreateForm
 
 def base_view(request):
     workers = Worker.objects.filter(is_available=True)
-    return render(request, "users/base.html", {"workers": workers})
+    return render(request, "users/home.html", {"workers": workers})
 
 
 class CustomerRegistrationView(CreateView):
@@ -223,6 +223,20 @@ class UserProfileView(LoginRequiredMixin, DetailView):
         elif user.is_worker:
             context["worker"] = user.worker
         return context
+
+
+class WorkerSearchResultsView(View):
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('query')
+        if query:
+            workers = Worker.objects.filter(
+                is_available=True,
+                skills__icontains=query,
+            )
+        else:
+            workers = Worker.objects.none()
+        context = {'workers': workers}
+        return render(request, 'users/worker_search_results.html', context)
 
 
 class WorkerProfileView(LoginRequiredMixin, DetailView):

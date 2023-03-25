@@ -130,21 +130,3 @@ class TaskRequestUpdateForm(forms.ModelForm):
             ("accepted", "Accepted"),
             ("rejected", "Rejected"),
         ]
-
-
-class WorkerSearchForm(forms.Form):
-    query = forms.CharField(label="Search for workers", max_length=255)
-
-    def search(self):
-        query = self.cleaned_data.get("query")
-        if query:
-            search_words = query.split()
-            workers = Worker.objects.filter(
-                availability=True,
-                skills__name__icontains=search_words[0],
-            )
-            for word in search_words[1:]:
-                workers = workers.filter(skills__name__icontains=word)
-            return workers
-        else:
-            return Worker.objects.none()

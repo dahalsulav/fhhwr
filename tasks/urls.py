@@ -8,7 +8,6 @@ from tasks.views import (
     TaskRequestListView,
     TaskRequestUpdateView,
     TaskUpdateView,
-    WorkerSearchResultsView,
 )
 
 app_name = "tasks"
@@ -28,10 +27,5 @@ urlpatterns = [
         "taskrequests/<int:pk>/update/",
         TaskRequestUpdateView.as_view(),
         name="taskrequest-update",
-    ),
-    path(
-        "workers/search/",
-        WorkerSearchResultsView.as_view(),
-        name="worker_search_results",
     ),
 ]

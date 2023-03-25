@@ -329,7 +329,7 @@
     <header>
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-          <a class="navbar-brand" href="{% url 'users:base' %}">FHHWR</a>
+          <a class="navbar-brand" href="{% url 'users:home' %}">FHHWR</a>
           <button
             class="navbar-toggler"
             type="button"
@@ -391,50 +391,23 @@
         </div>
       </nav>
     </header>
-    <main class="container">{% block content %}{% endblock %}</main>
     <!-- banner section start -->
     <div class="banner">
       <div class="search-box">
         <h1 class="text-info">Find Your Perfect Service</h1>
-        <form action="{% url 'tasks:worker_search_results' %}">
-          <input type="text" class="form-control" placeholder="Search" />
-          <button class="btn btn-info mt-3">Search</button>
+        <form action="{% url 'users:worker_search_results' %}" method="GET">
+          <input
+            type="text"
+            name="query"
+            class="form-control"
+            placeholder="Search worker by skills"
+          />
+          <button type="submit" class="btn btn-info mt-3">Search</button>
         </form>
       </div>
     </div>
     <!-- banner section end -->
-
-    <!-- Recommendation of worker Starts here -->
-    <div class="container my-2">
-      <h1 style="font-size: 32px" class="hire mt-5">You May Like To Hire</h1>
-      <div class="row">
-        {% for worker in workers %}
-        <div class="col-md-4">
-          <div class="card mb-4">
-            <img
-              src="{{ worker.profile_picture.url }}"
-              class="card-img-top"
-              alt="{{ worker.user.username }}"
-            />
-            <div class="card-body">
-              <h5 class="card-title">{{ worker.user.username }}</h5>
-              <p class="card-text">Skills: {{ worker.skills }}</p>
-              <p class="card-text">
-                Hourly Rate: Rs. {{ worker.hourly_rate }}
-              </p>
-              <p class="card-text">Rating: {{ worker.average_rating }}</p>
-              <a href="{% url 'users:worker_profile' worker.pk %}"
-                >Worker Profile</a
-              >
-            </div>
-          </div>
-        </div>
-        {% empty %}
-        <p>No workers available.</p>
-        {% endfor %}
-      </div>
-    </div>
-    <!-- Recommendation of worker Ends here -->
+    <main class="container">{% block content %}{% endblock %}</main>
 
     <footer class="container mt-5 mb-3 text-center">
       <p>&copy; Freelance House Hold Work Recommender</p>

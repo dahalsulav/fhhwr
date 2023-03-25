@@ -4,7 +4,7 @@ from . import views
 app_name = "users"
 
 urlpatterns = [
-    path("", views.base_view, name="base"),
+    path("", views.base_view, name="home"),
     path(
         "register/customer/",
         views.CustomerRegistrationView.as_view(),
@@ -36,6 +36,11 @@ urlpatterns = [
         "worker-profile/<int:pk>/",
         views.WorkerProfileView.as_view(),
         name="worker_profile",
+    ),
+    path(
+        "search/",
+        views.WorkerSearchResultsView.as_view(),
+        name="worker_search_results",
     ),
     path("requested-tasks/", views.requested_tasks, name="requested_tasks"),
     path("in-progress-tasks/", views.in_progress_tasks, name="in_progress_tasks"),

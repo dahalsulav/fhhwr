@@ -1,5 +1,4 @@
 {% extends 'users/base.html' %} {% load static %} {% block content %}
-<h1>Worker Search Results</h1>
 <div class="container mt-4">
   <div class="row">
     {% for worker in workers %}
@@ -27,11 +26,7 @@
           {% endif %} {% if worker.skills %}
           <p class="card-text"><strong>Skills:</strong> {{ worker.skills }}</p>
           {% endif %}
-          <a
-            href="{% url 'users:worker_profile' worker.user_id %}"
-            class="btn btn-primary"
-            >View Profile</a
-          >
+          <a href="{% url 'users:worker_profile' worker.pk %}">View Profile</a>
         </div>
       </div>
     </div>
