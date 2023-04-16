@@ -2,8 +2,8 @@
 <h1>Task Details</h1>
 <p><strong>Title:</strong> {{ task.title }}</p>
 <p><strong>Description:</strong> {{ task.description }}</p>
-<p><strong>Customer:</strong> {{ task.customer }}</p>
-<p><strong>Worker:</strong> {{ task.worker }}</p>
+<p><strong>Customer:</strong> {{ task.customer.user.username }}</p>
+<p><strong>Worker:</strong> {{ task.worker.user.username }}</p>
 <p><strong>Start Time:</strong> {{ task.start_time }}</p>
 <p><strong>End Time:</strong> {{ task.end_time }}</p>
 <p><strong>Location:</strong> {{ task.location }}</p>
@@ -13,4 +13,9 @@
 {% if task.status == 'completed' %}
 <p><strong>Rating:</strong> {{ task.rating }}</p>
 <p><strong>Review:</strong> {{ task.review }}</p>
-{% endif %} {% endblock %}
+
+{% endif %} {% if user.is_worker %} {% if task.status != 'completed' %}
+<a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-primary"
+  >Update Status</a
+>
+{% endif %} {% endif %} {% endblock %}

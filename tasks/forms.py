@@ -31,3 +31,19 @@ class TaskCreateForm(forms.ModelForm):
                 attrs={"class": "form-control", "placeholder": "Enter Location"}
             ),
         }
+
+
+class TaskStatusUpdateForm(forms.ModelForm):
+    STATUS_CHOICES = [
+        ("requested", "Requested"),
+        ("in-progress", "In Progress"),
+        ("completed", "Completed"),
+        ("rejected", "Rejected"),
+    ]
+
+    status = forms.ChoiceField(choices=STATUS_CHOICES, required=True)
+    
+    class Meta:
+        model = Task
+        fields = ["status"]
+        labels = {"status": "Status"}

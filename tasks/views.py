@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
@@ -8,8 +8,9 @@ from django.views import View
 from django.views.generic import CreateView, UpdateView, DetailView, ListView
 from django.contrib.auth.models import Group
 from .models import Task
-from .forms import TaskCreateForm
+from .forms import TaskCreateForm, TaskStatusUpdateForm
 from users.models import Worker
+from django.utils.decorators import method_decorator
 
 
 class TaskCreateView(LoginRequiredMixin, CreateView):
@@ -28,16 +29,21 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         return reverse("users:home")
 
 
-class TaskUpdateView(LoginRequiredMixin, UpdateView):
+def is_worker(user):
+    return user.is_authenticated and user.is_worker
+
+
+@method_decorator(user_passes_test(is_worker), name="dispatch")
+class TaskUpdateView(UpdateView):
     model = Task
-    form_class = TaskCreateForm
+    form_class = TaskStatusUpdateForm
     template_name = "tasks/task_update.html"
-    success_url = reverse_lazy("users:home")
+    success_url = reverse_lazy("tasks:task_list")
 
     def form_valid(self, form):
         task = form.save(commit=False)
         task.save()
-        messages.success(self.request, _("Task updated successfully."))
+        messages.success(self.request, _("Task status updated successfully."))
         return super().form_valid(form)
 
 
