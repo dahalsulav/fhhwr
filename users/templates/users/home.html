@@ -1,4 +1,4 @@
-{% extends 'users/base.html' %} {% block content %}
+{% extends 'users/base.html' %} {% block content %} {% if user.is_customer %}
 <!-- Recommendation of worker Starts here -->
 <div class="container my-2">
   <h1 style="font-size: 32px" class="hire mt-5">You May Like To Hire</h1>
@@ -34,5 +34,6 @@
     {% endfor %}
   </div>
 </div>
+{% endif %}
 <!-- Recommendation of worker Ends here -->
 {% endblock %}
