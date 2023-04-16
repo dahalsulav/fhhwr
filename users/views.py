@@ -140,7 +140,7 @@ class CustomLoginView(LoginView):
     template_name = "users/login.html"
 
     def get_success_url(self):
-        return reverse_lazy("users:base")
+        return reverse_lazy("users:home")
 
     def form_valid(self, form):
         username = self.request.POST["username"]
@@ -160,7 +160,7 @@ class CustomLoginView(LoginView):
 
 
 class CustomLogoutView(LogoutView):
-    next_page = reverse_lazy("users:base")
+    next_page = reverse_lazy("users:home")
 
 
 class ActivateAccountView(View):
@@ -226,17 +226,16 @@ class UserProfileView(LoginRequiredMixin, DetailView):
 
 
 class WorkerSearchResultsView(View):
-    def get(self, request, *args, **kwargs):
-        query = request.GET.get('query')
+    def get(self, request):
+        query = request.GET.get("query")
+        workers = Worker.objects.all()
         if query:
-            workers = Worker.objects.filter(
-                is_available=True,
-                skills__icontains=query,
-            )
-        else:
-            workers = Worker.objects.none()
-        context = {'workers': workers}
-        return render(request, 'users/worker_search_results.html', context)
+            search_words = query.split()
+            workers = workers.filter(skills__icontains=search_words[0])
+            for word in search_words[1:]:
+                workers = workers.filter(skills__icontains=word)
+        context = {"workers": workers}
+        return render(request, "users/worker_search_results.html", context)
 
 
 class WorkerProfileView(LoginRequiredMixin, DetailView):

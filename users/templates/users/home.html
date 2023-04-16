@@ -7,16 +7,23 @@
     <div class="col-md-4">
       <div class="card mb-4">
         <img
+          style="height: 150px"
           src="{{ worker.profile_picture.url }}"
-          class="card-img-top"
+          class="card-img-top img-fluid"
           alt="{{ worker.user.username }}"
         />
         <div class="card-body">
-          <h5 class="card-title">{{ worker.user.username }}</h5>
-          <p class="card-text">Skills: {{ worker.skills }}</p>
-          <p class="card-text">Hourly Rate: Rs. {{ worker.hourly_rate }}</p>
-          <p class="card-text">Rating: {{ worker.average_rating }}</p>
-          <a href="{% url 'users:worker_profile' worker.pk %}"
+          <h5 class="card-title text-primary">{{ worker.user.username }}</h5>
+          <p class="card-text"><strong>Skills:</strong> {{ worker.skills }}</p>
+          <p class="card-text">
+            <strong>Hourly Rate:</strong> Rs. {{ worker.hourly_rate }}
+          </p>
+          <p class="card-text">
+            <strong>Rating:</strong> {{ worker.average_rating }}
+          </p>
+          <a
+            class="text-success"
+            href="{% url 'users:worker_profile' worker.pk %}"
             >Worker Profile</a
           >
         </div>
