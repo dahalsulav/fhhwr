@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from users.models import Customer, Worker
 
@@ -6,49 +7,25 @@ from users.models import Customer, Worker
 class Task(models.Model):
     STATUS_CHOICES = [
         ("requested", _("Requested")),
-        ("in-progress", _("In Progress")),
+        ("in-progress", _("In progress")),
         ("completed", _("Completed")),
         ("rejected", _("Rejected")),
     ]
-    title = models.CharField(max_length=255)
+
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
     description = models.TextField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     location = models.CharField(max_length=255)
-    customer = models.ForeignKey(
-        Customer, on_delete=models.CASCADE, related_name="tasks"
-    )
-    worker = models.ForeignKey(
-        Worker,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="assigned_tasks",
-    )
-    status = models.CharField(
-        max_length=50, choices=STATUS_CHOICES, default="requested"
-    )
     created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
-
-
-class TaskRequest(models.Model):
-    STATUS_CHOICES = [
-        ("requested", _("Requested")),
-        ("accepted", _("Accepted")),
-        ("rejected", _("Rejected")),
-    ]
-    task = models.ForeignKey(
-        Task, on_delete=models.CASCADE, related_name="task_requests"
-    )
-    worker = models.ForeignKey(
-        Worker, on_delete=models.CASCADE, related_name="task_requests"
-    )
-    requested_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
+    last_updated_time = models.DateTimeField(auto_now=True)
     status = models.CharField(
-        max_length=50, choices=STATUS_CHOICES, default="requested"
+        max_length=20, choices=STATUS_CHOICES, default="requested"
     )
+    rating = models.IntegerField(blank=True, null=True)
+    review = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ("task", "worker")
+        ordering = ["-created_time"]

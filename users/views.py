@@ -25,6 +25,7 @@ from django.http import HttpResponseRedirect
 from tasks.models import Task
 from django.contrib.auth.decorators import login_required
 from tasks.forms import TaskCreateForm
+from tasks.forms import TaskCreateForm
 
 
 def base_view(request):
@@ -241,30 +242,6 @@ class WorkerSearchResultsView(View):
 class WorkerProfileView(LoginRequiredMixin, DetailView):
     model = Worker
     template_name = "users/worker_profile.html"
-
-    def get_object(self):
-        pk = self.kwargs.get("pk")
-        return get_object_or_404(Worker, pk=pk)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        worker = self.get_object()
-
-        if self.request.method == "POST":
-            form = TaskCreateForm(worker, self.request.POST)
-            if form.is_valid():
-                task = form.save(commit=False)
-                task.worker = worker
-                task.customer = self.request.user.customer
-                task.save()
-                messages.success(self.request, _("Task created successfully."))
-                return redirect("users:dashboard")
-        else:
-            form = TaskCreateForm(worker)
-
-        context["worker"] = worker
-        context["form"] = form
-        return context
 
 
 @login_required

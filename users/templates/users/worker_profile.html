@@ -47,13 +47,13 @@
         </tbody>
       </table>
 
-      <!-- Display task request form -->
+      <!-- Display task request button -->
       <div class="container my-2">
-        <h2>Request Task</h2>
-        <form method="POST">
-          {% csrf_token %} {{ task_request_form.as_p }}
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+        <a
+          href="{% url 'tasks:task_create' pk=worker.pk %}"
+          class="btn btn-primary"
+          >Request Task</a
+        >
       </div>
     </div>
   </div>
