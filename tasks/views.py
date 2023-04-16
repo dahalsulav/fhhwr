@@ -52,21 +52,22 @@ class TaskListView(LoginRequiredMixin, ListView):
     context_object_name = "tasks"
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name="Customer").exists():
-            customer = self.request.user.customer
-            tasks = Task.objects.filter(customer=customer).order_by("-created_time")
-            return tasks
-        elif self.request.user.groups.filter(name="Worker").exists():
-            worker = self.request.user.worker
-            tasks = Task.objects.filter(worker=worker).order_by("-created_time")
-            return tasks
+        user = self.request.user
+        if user.is_customer:
+            tasks = Task.objects.filter(customer=user.customer).order_by(
+                "-created_time"
+            )
+        elif user.is_worker:
+            tasks = Task.objects.filter(worker=user.worker).order_by("-created_time")
         else:
-            return Task.objects.none()
+            tasks = Task.objects.none()
+        return tasks
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.user.groups.filter(name="Customer").exists():
-            customer = self.request.user.customer
+        user = self.request.user
+        if user.is_customer:
+            customer = user.customer
             context["requested_tasks"] = Task.objects.filter(
                 customer=customer, status="requested"
             )
@@ -79,13 +80,19 @@ class TaskListView(LoginRequiredMixin, ListView):
             context["in_progress_tasks"] = Task.objects.filter(
                 customer=customer, status="in-progress"
             )
-        elif self.request.user.groups.filter(name="Worker").exists():
-            worker = self.request.user.worker
-            context["in_progress_tasks"] = Task.objects.filter(
-                worker=worker, status="in-progress"
+        elif user.is_worker:
+            worker = user.worker
+            context["requested_tasks"] = Task.objects.filter(
+                worker=worker, status="requested"
+            )
+            context["rejected_tasks"] = Task.objects.filter(
+                worker=worker, status="rejected"
             )
             context["completed_tasks"] = Task.objects.filter(
                 worker=worker, status="completed"
+            )
+            context["in_progress_tasks"] = Task.objects.filter(
+                worker=worker, status="in-progress"
             )
         return context
 

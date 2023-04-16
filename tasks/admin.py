@@ -4,7 +4,14 @@ from .models import Task
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "customer", "worker", "status", "created_time")
+    list_display = (
+        "id",
+        "title",
+        "customer_username",
+        "worker_username",
+        "status",
+        "created_time",
+    )
     list_filter = ("status",)
     search_fields = ("title", "description")
     date_hierarchy = "created_time"
@@ -24,3 +31,18 @@ class TaskAdmin(admin.ModelAdmin):
         queryset.update(status="rejected")
 
     mark_as_rejected.short_description = "Mark selected tasks as rejected"
+
+    def customer_username(self, obj):
+        return obj.customer.user.username
+
+    customer_username.admin_order_field = "customer__user__username"
+    customer_username.short_description = "Customer Username"
+
+    def worker_username(self, obj):
+        if obj.worker:
+            return obj.worker.user.username
+        else:
+            return "-"
+
+    worker_username.admin_order_field = "worker__user__username"
+    worker_username.short_description = "Worker Username"
