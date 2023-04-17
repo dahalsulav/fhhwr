@@ -43,9 +43,14 @@
   {{ form.total_cost.label_tag }} {{ form.total_cost }}
   <br />
   <p id="availability">
-    Availability: <span id="availability_status">Yes</span>
+    Availability: <span id="availability_status">Checking...</span>
   </p>
-  <button type="submit" class="btn btn-primary" id="request_task_button">
+  <button
+    type="submit"
+    class="btn btn-primary"
+    id="request_task_button"
+    disabled
+  >
     Request Task
   </button>
 </form>
@@ -56,44 +61,32 @@
     const hourlyRate = $("#id_hourly_rate");
     const totalCost = $("#id_total_cost");
     const availabilityStatus = $("#availability_status");
-    const requestTaskButton = $("#request_task_button");
+      const requestTaskButton = $("#request_task_button");
+      const inProgressTasks = {{ in_progress_tasks_json|safe }};
 
-    function checkAvailability() {
-      const start = new Date(startTime.val());
-      const end = new Date(endTime.val());
-      let available = true;
+      function checkAvailability() {
+        const start = new Date(startTime.val());
+        const end = new Date(endTime.val());
+        let available = true;
 
-      const inProgressTasks = JSON.parse(
-        "{{ in_progress_tasks_json|escapejs }}"
-      );
-      for (let i = 0; i < inProgressTasks.length; i++) {
-        const taskStart = moment
-          .utc(inProgressTasks[i]["start_time"])
-          .local()
-          .toDate();
-        const taskEnd = moment
-          .utc(inProgressTasks[i]["end_time"])
-          .local()
-          .toDate();
-        console.log(taskStart, taskEnd);
+        for (let i = 0; i < inProgressTasks.length; i++) {
+          const taskStart = moment.utc(inProgressTasks[i].fields.start_time).local().toDate();
+          const taskEnd = moment.utc(inProgressTasks[i].fields.end_time).local().toDate();
 
-        if (
-          (start >= taskStart && start <= taskEnd) ||
-          (end >= taskStart && end <= taskEnd)
-        ) {
-          available = false;
-          break;
+          if ((start >= taskStart && start <= taskEnd) || (end >= taskStart && end <= taskEnd)) {
+            available = false;
+            break;
+          }
+        }
+
+        if (available) {
+          availabilityStatus.text("Yes");
+          requestTaskButton.prop("disabled", false);
+        } else {
+          availabilityStatus.text("No");
+          requestTaskButton.prop("disabled", true);
         }
       }
-
-      if (available) {
-        availabilityStatus.text("Yes");
-        requestTaskButton.show();
-      } else {
-        availabilityStatus.text("No");
-        requestTaskButton.hide();
-      }
-    }
 
     function calculateTotalCost() {
       console.log("calculateTotalCost called");

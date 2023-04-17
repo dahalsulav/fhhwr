@@ -12,6 +12,7 @@ from .forms import TaskCreateForm, TaskStatusUpdateForm
 from users.models import Worker
 from django.utils.decorators import method_decorator
 from django.core import serializers
+from decimal import Decimal
 
 
 class TaskCreateView(LoginRequiredMixin, CreateView):
@@ -31,7 +32,6 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         in_progress_tasks = Task.objects.filter(worker=worker, status="in-progress")
         in_progress_tasks_json = serializers.serialize("json", in_progress_tasks)
         context["in_progress_tasks_json"] = in_progress_tasks_json
-        print(context["in_progress_tasks_json"])
         return context
 
     def form_valid(self, form):
@@ -39,7 +39,10 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         task.customer = self.request.user.customer
         task.worker = Worker.objects.get(pk=self.kwargs["pk"])
         task.hourly_rate = form.cleaned_data["hourly_rate"]
-        task.total_cost = form.cleaned_data["total_cost"]
+        # Calculate the total cost of the task
+        duration = (task.end_time - task.start_time).total_seconds() / 3600.0
+        task.total_cost = Decimal(duration) * task.hourly_rate
+
         task.save()
         return super().form_valid(form)
 
