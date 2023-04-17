@@ -58,6 +58,20 @@ class TaskUpdateView(UpdateView):
     template_name = "tasks/task_update.html"
     success_url = reverse_lazy("tasks:task_list")
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        task = self.get_object()
+        if self.request.GET.get("from_requested") == "true":
+            # If called from requested status, show only in-progress and rejected options
+            form.fields["status"].choices = [
+                ("in-progress", "In Progress"),
+                ("rejected", "Rejected"),
+            ]
+        elif task.status == "in-progress":
+            # If called from in-progress status, show only completed option
+            form.fields["status"].choices = [("completed", "Completed")]
+        return form
+
     def form_valid(self, form):
         task = form.save(commit=False)
         task.save()
@@ -66,7 +80,8 @@ class TaskUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.object.status == "completed":
+        task = self.get_object()
+        if task.status == "completed":
             context["show_update_status"] = False
         else:
             context["show_update_status"] = True

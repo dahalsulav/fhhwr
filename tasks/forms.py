@@ -70,3 +70,19 @@ class TaskStatusUpdateForm(forms.ModelForm):
         model = Task
         fields = ["status"]
         labels = {"status": "Status"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Get the current status of the task
+        current_status = self.instance.status
+        # Define the valid status transitions
+        valid_transitions = {
+            "requested": ["in-progress", "rejected"],
+            "in-progress": ["completed"],
+        }
+        # Update the choices for the status field based on the current status
+        self.fields["status"].choices = [
+            (choice, label)
+            for choice, label in self.fields["status"].choices
+            if choice in valid_transitions[current_status]
+        ]
