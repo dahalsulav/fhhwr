@@ -25,7 +25,7 @@ from django.http import HttpResponseRedirect
 from tasks.models import Task
 from django.contrib.auth.decorators import login_required
 from tasks.forms import TaskCreateForm
-from django.db.models import Avg
+from django.db.models import Avg, Count, Q
 
 
 def base_view(request):
@@ -278,6 +278,10 @@ class WorkerSearchResultsView(View):
             workers = workers.filter(skills__icontains=search_words[0])
             for word in search_words[1:]:
                 workers = workers.filter(skills__icontains=word)
+        workers = workers.annotate(
+            rating=Avg("task__rating"),
+            tasks_completed=Count("task", filter=Q(task__status="completed")),
+        ).order_by("-rating")
         context = {"workers": workers}
         return render(request, "users/worker_search_results.html", context)
 
