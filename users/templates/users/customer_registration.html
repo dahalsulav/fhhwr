@@ -1,7 +1,7 @@
 {% extends "users/base.html" %} {% block content %}
 <div class="container">
   <h2 class="mb-3">Customer Registration</h2>
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" id="registration-form">
     {% csrf_token %}
     <div class="row">
       {% for field in form %}
@@ -34,4 +34,25 @@
     Already have an account? <a href="{% url 'users:login' %}">Log in</a>
   </p>
 </div>
-{% endblock %}
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const registrationForm = document.getElementById("registration-form");
+    const phoneNumberInput = document.getElementById("id_phone_number");
+
+    registrationForm.addEventListener("submit", function (event) {
+      const phoneNumber = phoneNumberInput.value;
+      const phoneNumberRegex = /^\d{10}$/;
+
+      if (!phoneNumberRegex.test(phoneNumber)) {
+        event.preventDefault();
+        phoneNumberInput.classList.add("is-invalid");
+        const errorDiv = phoneNumberInput.nextElementSibling;
+        errorDiv.textContent = "Phone number must be exactly 10 digits.";
+      } else {
+        phoneNumberInput.classList.remove("is-invalid");
+      }
+    });
+  });
+</script>
+{% endblock %} {% endblock %}

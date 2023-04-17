@@ -42,8 +42,9 @@ urlpatterns = [
         views.WorkerSearchResultsView.as_view(),
         name="worker_search_results",
     ),
-    path("requested-tasks/", views.requested_tasks, name="requested_tasks"),
-    path("in-progress-tasks/", views.in_progress_tasks, name="in_progress_tasks"),
-    path("completed-tasks/", views.completed_tasks, name="completed_tasks"),
-    path("rejected-tasks/", views.rejected_tasks, name="rejected_tasks"),
+    path(
+        "resend_activation_link/",
+        views.ResendActivationLinkView.as_view(),
+        name="resend_activation_link",
+    ),
 ]

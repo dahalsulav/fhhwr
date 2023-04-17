@@ -25,7 +25,6 @@ from django.http import HttpResponseRedirect
 from tasks.models import Task
 from django.contrib.auth.decorators import login_required
 from tasks.forms import TaskCreateForm
-from tasks.forms import TaskCreateForm
 
 
 def base_view(request):
@@ -50,7 +49,7 @@ class CustomerRegistrationView(CreateView):
                 "user": self.object,
                 "domain": self.request.META["HTTP_HOST"],
                 "uid": urlsafe_base64_encode(force_bytes(self.object.pk)),
-                "token": default_token_generator.make_token(self.object),
+                "token": account_activation_token.make_token(self.object),
             },
         )
         to_email = form.cleaned_data.get("email")
@@ -103,7 +102,7 @@ class WorkerRegistrationView(CreateView):
                 "user": self.object,
                 "domain": self.request.META["HTTP_HOST"],
                 "uid": urlsafe_base64_encode(force_bytes(self.object.pk)),
-                "token": default_token_generator.make_token(self.object),
+                "token": account_activation_token.make_token(self.object),
             },
         )
         to_email = form.cleaned_data.get("email")
@@ -149,6 +148,16 @@ class CustomLoginView(LoginView):
         user = authenticate(self.request, username=username, password=password)
 
         if user is not None:
+            if user.is_customer and not user.customer.email_verified:
+                messages.error(
+                    self.request, "Please verify your email address before logging in."
+                )
+                return self.form_invalid(form)
+            elif user.is_worker and not user.worker.email_verified:
+                messages.error(
+                    self.request, "Please verify your email address before logging in."
+                )
+                return self.form_invalid(form)
             login(self.request, user)
             return HttpResponseRedirect(self.get_success_url())
         else:
@@ -175,13 +184,26 @@ class ActivateAccountView(View):
             user = None
 
         if user is not None and account_activation_token.check_token(user, token):
-            user.customer.email_verified = True
-            user.is_active = True
-            user.customer.save()
-            user.save()
-            messages.success(request, "Your account has been activated successfully.")
-            return redirect("users:login")
+            if user.is_customer:
+                user.customer.email_verified = True
+                user.is_active = True
+                user.customer.save()
+                user.save()
+                messages.success(
+                    request, "Your account has been activated successfully."
+                )
+                return redirect("users:login")
+            elif user.is_worker:
+                user.worker.email_verified = True
+                user.is_active = True
+                user.worker.save()
+                user.save()
+                messages.success(
+                    request, "Your account has been activated successfully."
+                )
+                return redirect("users:login")
         else:
+            print("Invalid activation link")
             messages.error(request, "Invalid activation link.")
             return redirect("users:login")
 
@@ -208,6 +230,26 @@ class ActivateWorkerView(View):
         else:
             messages.error(request, "Invalid activation link.")
             return redirect("users:login")
+
+
+class ResendActivationLinkView(View):
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get("email")
+        try:
+            user = User.objects.get(email=email)
+            if not user.is_active:
+                if user.is_customer and not user.customer.email_verified:
+                    send_activation_email(user, request)
+                elif user.is_worker and not user.worker.email_verified:
+                    send_activation_email(user, request)
+                messages.success(
+                    request, "Activation link has been resent to your email."
+                )
+            else:
+                messages.error(request, "Account is already active.")
+        except User.DoesNotExist:
+            messages.error(request, "No account found with the provided email.")
+        return redirect("users:login")
 
 
 class UserProfileView(LoginRequiredMixin, DetailView):
@@ -242,27 +284,3 @@ class WorkerSearchResultsView(View):
 class WorkerProfileView(LoginRequiredMixin, DetailView):
     model = Worker
     template_name = "users/worker_profile.html"
-
-
-@login_required
-def requested_tasks(request):
-    tasks = Task.objects.filter(customer=request.user.customer, status="requested")
-    return render(request, "users/requested_tasks.html", {"tasks": tasks})
-
-
-@login_required
-def in_progress_tasks(request):
-    tasks = Task.objects.filter(worker=request.user.worker, status="in-progress")
-    return render(request, "users/in_progress_tasks.html", {"tasks": tasks})
-
-
-@login_required
-def completed_tasks(request):
-    tasks = Task.objects.filter(worker=request.user.worker, status="completed")
-    return render(request, "users/completed_tasks.html", {"tasks": tasks})
-
-
-@login_required
-def rejected_tasks(request):
-    tasks = Task.objects.filter(worker=request.user.worker, status="rejected")
-    return render(request, "users/rejected_tasks.html", {"tasks": tasks})
