@@ -7,6 +7,9 @@ name = "pypi"
 django = "==3.2"
 pillow = "*"
 six = "==1.16.0"
+django-extensions = "*"
+graphviz = "*"
+pydotplus = "*"
 
 [dev-packages]
 
