@@ -44,7 +44,11 @@
 {% elif task.status == 'completed' and user.is_worker and task.rating %}
 <p><strong>Rating:</strong> {{ task.rating }}</p>
 <p><strong>Review:</strong> {{ task.review }}</p>
-{% endif %} {% if user.is_worker and task.status != 'completed' %}
+{% endif %} {% if user.is_worker and task.status == 'requested' %}
+<a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-primary"
+  >Update Status</a
+>
+{% endif %} {% if user.is_worker and task.status == 'in-progress' %}
 <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-primary"
   >Update Status</a
 >

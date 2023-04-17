@@ -18,9 +18,7 @@
           <p class="card-text">
             <strong>Hourly Rate:</strong> Rs. {{ worker.hourly_rate }}
           </p>
-          <p class="card-text">
-            <strong>Rating:</strong> {{ worker.average_rating }}
-          </p>
+
           <a
             class="text-success"
             href="{% url 'users:worker_profile' worker.pk %}"

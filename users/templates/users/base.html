@@ -410,6 +410,7 @@
     <div class="banner">
       <div class="search-box">
         <h1 class="text-info">Find Your Perfect Service</h1>
+        {% if user.is_customer %}
         <form action="{% url 'users:worker_search_results' %}" method="GET">
           <input
             type="text"
@@ -419,6 +420,7 @@
           />
           <button type="submit" class="btn btn-info mt-3">Search</button>
         </form>
+        {% endif %}
       </div>
     </div>
     <!-- banner section end -->

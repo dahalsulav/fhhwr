@@ -289,8 +289,19 @@ class WorkerProfileView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         worker = get_object_or_404(Worker, pk=self.kwargs["pk"])
-        rating = Task.objects.filter(worker=worker, rating__isnull=False).aggregate(
-            Avg("rating")
-        )["rating__avg"]
-        context["average_rating"] = round(rating, 2) if rating else 0.0
+
+        # Calculate the average rating for the worker
+        avg_rating = Task.objects.filter(
+            worker=worker, status="completed", rating__isnull=False
+        ).aggregate(Avg("rating"))["rating__avg"]
+        context["avg_rating"] = round(avg_rating, 1) if avg_rating else None
+
+        # Count the number of completed tasks for the worker
+        completed_tasks_count = Task.objects.filter(
+            worker=worker, status="completed"
+        ).count()
+        context["completed_tasks_count"] = (
+            completed_tasks_count if completed_tasks_count > 0 else None
+        )
+
         return context

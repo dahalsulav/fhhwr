@@ -27,8 +27,13 @@
           </tr>
           <tr>
             <th>Average Rating</th>
-            <td>{{ average_rating }}</td>
+            <td>{{ avg_rating|default:"None" }}</td>
           </tr>
+          <tr>
+            <th>Completed Tasks</th>
+            <td>{{ completed_tasks_count|default:"None" }}</td>
+          </tr>
+
           <tr>
             <th>Hourly Rate</th>
             <td>{{ worker.hourly_rate }}</td>
