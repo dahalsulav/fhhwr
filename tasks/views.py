@@ -11,6 +11,7 @@ from .models import Task
 from .forms import TaskCreateForm, TaskStatusUpdateForm
 from users.models import Worker
 from django.utils.decorators import method_decorator
+from django.core import serializers
 
 
 class TaskCreateView(LoginRequiredMixin, CreateView):
@@ -27,9 +28,10 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         worker = get_object_or_404(Worker, pk=self.kwargs["pk"])
-        context["in_progress_tasks"] = Task.objects.filter(
-            worker=worker, status="in_progress"
-        )
+        in_progress_tasks = Task.objects.filter(worker=worker, status="in-progress")
+        in_progress_tasks_json = serializers.serialize("json", in_progress_tasks)
+        context["in_progress_tasks_json"] = in_progress_tasks_json
+        print(context["in_progress_tasks_json"])
         return context
 
     def form_valid(self, form):
@@ -38,7 +40,6 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         task.worker = Worker.objects.get(pk=self.kwargs["pk"])
         task.hourly_rate = form.cleaned_data["hourly_rate"]
         task.total_cost = form.cleaned_data["total_cost"]
-
         task.save()
         return super().form_valid(form)
 
@@ -62,6 +63,14 @@ class TaskUpdateView(UpdateView):
         task.save()
         messages.success(self.request, _("Task status updated successfully."))
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.object.status == "completed":
+            context["show_update_status"] = False
+        else:
+            context["show_update_status"] = True
+        return context
 
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
@@ -161,11 +170,7 @@ def task_complete(request, pk):
 @login_required
 def task_rate(request, pk):
     task = get_object_or_404(Task, pk=pk)
-    if (
-        task.worker is not None
-        and task.worker == request.user.worker
-        and task.status == "completed"
-    ):
+    if task.status == "completed" and task.customer.user == request.user:
         if request.method == "POST":
             rating = request.POST.get("rating")
             review = request.POST.get("review")
@@ -174,6 +179,8 @@ def task_rate(request, pk):
             task.save()
             messages.success(request, _("Task rated successfully."))
             return redirect("users:home")
+        elif task.rating is not None:
+            return render(request, "tasks/task_rating.html", {"task": task})
         else:
             return render(request, "tasks/task_rate.html", {"task": task})
     else:

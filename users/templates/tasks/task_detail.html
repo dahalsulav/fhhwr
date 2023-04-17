@@ -12,12 +12,37 @@
 <p><strong>Created Time:</strong> {{ task.created_time }}</p>
 <p><strong>Last Updated Time:</strong> {{ task.last_updated_time }}</p>
 <p><strong>Status:</strong> {{ task.status }}</p>
-{% if task.status == 'completed' %}
+
+{% if task.status == 'completed' and user.is_customer and not task.rating %}
+<form method="post" action="{% url 'tasks:task_rate' task.pk %}">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="id_rating">Rating:</label>
+    <select class="form-control" name="rating" id="id_rating" required>
+      <option value="">-- Select rating --</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="id_review">Review:</label>
+    <textarea
+      class="form-control"
+      name="review"
+      id="id_review"
+      required
+    ></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit Rating</button>
+</form>
+{% elif task.status == 'completed' and user.is_customer and task.rating %}
 <p><strong>Rating:</strong> {{ task.rating }}</p>
 <p><strong>Review:</strong> {{ task.review }}</p>
-
-{% endif %} {% if user.is_worker %} {% if task.status != 'completed' %}
+{% endif %} {% if user.is_worker and task.status != 'completed' %}
 <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-primary"
   >Update Status</a
 >
-{% endif %} {% endif %} {% endblock %}
+{% endif %} {% endblock %}

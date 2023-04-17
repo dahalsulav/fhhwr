@@ -38,7 +38,6 @@
       />
     </div>
   </div>
-
   {{ form.hourly_rate.label_tag }} {{ form.hourly_rate }}
   <br />
   {{ form.total_cost.label_tag }} {{ form.total_cost }}
@@ -51,80 +50,83 @@
   </button>
 </form>
 <script>
-   $(document).ready(function () {
-     const startTime = $("input[name='start_time']");
-     const endTime = $("input[name='end_time']");
-     const hourlyRate = $("#id_hourly_rate");
-     const totalCost = $("#id_total_cost");
-     const availabilityStatus = $("#availability_status");
-     const requestTaskButton = $("#request_task_button");
+  $(document).ready(function () {
+    const startTime = $("input[name='start_time']");
+    const endTime = $("input[name='end_time']");
+    const hourlyRate = $("#id_hourly_rate");
+    const totalCost = $("#id_total_cost");
+    const availabilityStatus = $("#availability_status");
+    const requestTaskButton = $("#request_task_button");
 
-     function checkAvailability() {
-     const start = new Date(startTime.val());
-     const end = new Date(endTime.val());
-     let available = true;
+    function checkAvailability() {
+      const start = new Date(startTime.val());
+      const end = new Date(endTime.val());
+      let available = true;
 
-     {% for task in in_progress_tasks %}
-       const taskStart = new Date("{{ task.start_time|date:"c" }}");
-       const taskEnd = new Date("{{ task.end_time|date:"c" }}");
+      const inProgressTasks = JSON.parse(
+        "{{ in_progress_tasks_json|escapejs }}"
+      );
+      for (let i = 0; i < inProgressTasks.length; i++) {
+        const taskStart = moment
+          .utc(inProgressTasks[i]["start_time"])
+          .local()
+          .toDate();
+        const taskEnd = moment
+          .utc(inProgressTasks[i]["end_time"])
+          .local()
+          .toDate();
+        console.log(taskStart, taskEnd);
 
-       if ((start >= taskStart && start <= taskEnd) || (end >= taskStart && end <= taskEnd)) {
-         available = false;
-         break;
-       }
-     {% endfor %}
+        if (
+          (start >= taskStart && start <= taskEnd) ||
+          (end >= taskStart && end <= taskEnd)
+        ) {
+          available = false;
+          break;
+        }
+      }
 
-     if (available) {
-       availabilityStatus.text("Yes");
-       requestTaskButton.show();
-     } else {
-       availabilityStatus.text("No");
-       requestTaskButton.hide();
-     }
-   }
+      if (available) {
+        availabilityStatus.text("Yes");
+        requestTaskButton.show();
+      } else {
+        availabilityStatus.text("No");
+        requestTaskButton.hide();
+      }
+    }
 
-     function calculateTotalCost() {
-       console.log("calculateTotalCost called");
-       const start = new Date(startTime.val());
-       const end = new Date(endTime.val());
-       const hours = (end - start) / (1000 * 60 * 60);
-       const now = new Date();
+    function calculateTotalCost() {
+      console.log("calculateTotalCost called");
+      const start = new Date(startTime.val());
+      const end = new Date(endTime.val());
+      const hours = (end - start) / (1000 * 60 * 60);
+      const now = new Date();
 
-       if (start < now) {
-         alert("Start time should be greater than the current time.");
-         startTime.val("");
-         return;
-       }
+      if (start < now) {
+        alert("Start time should be greater than the current time.");
+        startTime.val("");
+        return;
+      }
 
-       if (end <= start) {
-         alert("End time should be greater than the start time.");
-         endTime.val("");
-         return;
-       }
-       if (!isNaN(hours) && hours > 0) {
-         const rate = parseFloat(hourlyRate.val());
-         const cost = rate * hours;
-         totalCost.val(cost.toFixed(2));
-       } else {
-         totalCost.val("");
-       }
-        checkAvailability();
-     }
+      if (end <= start) {
+        alert("End time should be greater than the start time.");
+        endTime.val("");
+        return;
+      }
+      if (!isNaN(hours) && hours > 0) {
+        const rate = parseFloat(hourlyRate.val());
+        const cost = rate * hours;
+        totalCost.val(cost.toFixed(2));
+      } else {
+        totalCost.val("");
+      }
+    }
 
-     startTime.on("change", calculateTotalCost);
-     endTime.on("change", calculateTotalCost);
-  $("form").on("submit", function (event) {
-     event.preventDefault();
-     console.log("Form submitted");
-
-     // Check if the Request Task button is visible (worker is available)
-     if ($("#request_task_button").is(":visible")) {
-       this.submit();
-     } else {
-       console.log("Worker not available");
-     }
-   });
-   });
+    startTime.on("change", calculateTotalCost);
+    endTime.on("change", calculateTotalCost);
+    checkAvailability(); // Call the function when the page loads
+    setInterval(checkAvailability, 5000); // Call the function every 5 seconds
+  });
 </script>
 
 {% endblock %}
