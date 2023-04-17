@@ -25,6 +25,7 @@ from django.http import HttpResponseRedirect
 from tasks.models import Task
 from django.contrib.auth.decorators import login_required
 from tasks.forms import TaskCreateForm
+from django.db.models import Avg
 
 
 def base_view(request):
@@ -284,3 +285,12 @@ class WorkerSearchResultsView(View):
 class WorkerProfileView(LoginRequiredMixin, DetailView):
     model = Worker
     template_name = "users/worker_profile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        worker = get_object_or_404(Worker, pk=self.kwargs["pk"])
+        rating = Task.objects.filter(worker=worker, rating__isnull=False).aggregate(
+            Avg("rating")
+        )["rating__avg"]
+        context["average_rating"] = round(rating, 2) if rating else 0.0
+        return context
