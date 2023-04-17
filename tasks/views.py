@@ -23,11 +23,13 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         worker = Worker.objects.get(pk=self.kwargs["pk"])
         form.fields["hourly_rate"].initial = worker.hourly_rate
         return form
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         worker = get_object_or_404(Worker, pk=self.kwargs["pk"])
-        context['in_progress_tasks'] = Task.objects.filter(worker=worker, status='in_progress')
+        context["in_progress_tasks"] = Task.objects.filter(
+            worker=worker, status="in_progress"
+        )
         return context
 
     def form_valid(self, form):

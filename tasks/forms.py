@@ -55,11 +55,6 @@ class TaskCreateForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, **kwargs):
-        super(TaskCreateForm, self).__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            field.required = True
-
 
 class TaskStatusUpdateForm(forms.ModelForm):
     STATUS_CHOICES = [
