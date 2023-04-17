@@ -18,10 +18,33 @@ class TaskCreateForm(forms.ModelForm):
             format="%Y-%m-%dT%H:%M",
         ),
     )
+    hourly_rate = forms.DecimalField(
+        disabled=True,
+        required=False,
+        widget=forms.NumberInput(
+            attrs={"class": "form-control", "readonly": "readonly"}
+        ),
+    )
+
+    total_cost = forms.DecimalField(
+        disabled=True,
+        required=False,
+        widget=forms.NumberInput(
+            attrs={"class": "form-control", "readonly": "readonly"}
+        ),
+    )
 
     class Meta:
         model = Task
-        fields = ["title", "description", "start_time", "end_time", "location"]
+        fields = [
+            "title",
+            "description",
+            "start_time",
+            "end_time",
+            "location",
+            "hourly_rate",
+            "total_cost",
+        ]
         widgets = {
             "title": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Enter Title"}
@@ -31,6 +54,11 @@ class TaskCreateForm(forms.ModelForm):
                 attrs={"class": "form-control", "placeholder": "Enter Location"}
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(TaskCreateForm, self).__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.required = True
 
 
 class TaskStatusUpdateForm(forms.ModelForm):
@@ -42,7 +70,7 @@ class TaskStatusUpdateForm(forms.ModelForm):
     ]
 
     status = forms.ChoiceField(choices=STATUS_CHOICES, required=True)
-    
+
     class Meta:
         model = Task
         fields = ["status"]

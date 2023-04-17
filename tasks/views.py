@@ -18,10 +18,25 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     form_class = TaskCreateForm
     template_name = "tasks/task_create.html"
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        worker = Worker.objects.get(pk=self.kwargs["pk"])
+        form.fields["hourly_rate"].initial = worker.hourly_rate
+        return form
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        worker = get_object_or_404(Worker, pk=self.kwargs["pk"])
+        context['in_progress_tasks'] = Task.objects.filter(worker=worker, status='in_progress')
+        return context
+
     def form_valid(self, form):
         task = form.save(commit=False)
         task.customer = self.request.user.customer
         task.worker = Worker.objects.get(pk=self.kwargs["pk"])
+        task.hourly_rate = form.cleaned_data["hourly_rate"]
+        task.total_cost = form.cleaned_data["total_cost"]
+
         task.save()
         return super().form_valid(form)
 

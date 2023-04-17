@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from users.models import Customer, Worker
+from django.core.validators import MinValueValidator
 
 
 class Task(models.Model):
@@ -26,6 +27,20 @@ class Task(models.Model):
     )
     rating = models.IntegerField(blank=True, null=True)
     review = models.TextField(blank=True)
+    hourly_rate = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0)],
+    )
+    total_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0)],
+    )
 
     class Meta:
         ordering = ["-created_time"]
