@@ -26,11 +26,36 @@ from tasks.models import Task
 from django.contrib.auth.decorators import login_required
 from tasks.forms import TaskCreateForm
 from django.db.models import Avg, Count, Q
+from .recommendations import get_worker_recommendations
 
 
 def base_view(request):
-    workers = Worker.objects.filter(is_available=True)
-    return render(request, "users/home.html", {"workers": workers})
+    if hasattr(request.user, "customer"):
+        # Get the current user and their ratings for workers
+        customer = request.user.customer
+        customer_ratings = {}
+        for task in Task.objects.filter(customer=customer, rating__isnull=False):
+            customer_ratings[task.worker.id] = task.rating
+
+        # Get the recommended workers for the customer based on their ratings
+        recommended_workers = []
+        if customer_ratings:
+            recommendations = get_worker_recommendations(customer_ratings)
+            recommended_workers = [
+                Worker.objects.get(pk=worker_id) for worker_id, score in recommendations
+            ]
+
+        # Get all available workers
+        workers = Worker.objects.filter(is_available=True)
+
+        return render(
+            request,
+            "users/home.html",
+            {"workers": workers, "recommended_workers": recommended_workers},
+        )
+    else:
+        workers = Worker.objects.filter(is_available=True)
+        return render(request, "users/home.html", {"workers": workers})
 
 
 class CustomerRegistrationView(CreateView):

@@ -1,7 +1,43 @@
 {% extends 'users/base.html' %} {% block content %} {% if user.is_customer %}
-<!-- Recommendation of worker Starts here -->
+<!-- Recommendation of workers Starts here -->
 <div class="container my-2">
-  <h1 style="font-size: 32px" class="hire mt-5">You May Like To Hire</h1>
+  <h1 style="font-size: 32px" class="hire mt-5">Recommended Workers</h1>
+  <div class="row">
+    {% for worker in recommended_workers %}
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <img
+          style="height: 150px"
+          src="{{ worker.profile_picture.url }}"
+          class="card-img-top img-fluid"
+          alt="{{ worker.user.username }}"
+        />
+        <div class="card-body">
+          <h5 class="card-title text-primary">{{ worker.user.username }}</h5>
+          <p class="card-text"><strong>Skills:</strong> {{ worker.skills }}</p>
+          <p class="card-text">
+            <strong>Hourly Rate:</strong> Rs. {{ worker.hourly_rate }}
+          </p>
+
+          <a
+            class="text-success"
+            href="{% url 'users:worker_profile' worker.pk %}"
+            >Worker Profile</a
+          >
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>No recommended workers available.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Recommendation of workers Ends here -->
+
+<!-- All workers Starts here -->
+<div class="container my-2">
+  <h1 style="font-size: 32px" class="hire">Our Workers</h1>
   <div class="row">
     {% for worker in workers %}
     <div class="col-md-4">
@@ -33,5 +69,5 @@
   </div>
 </div>
 {% endif %}
-<!-- Recommendation of worker Ends here -->
+<!-- all workers Ends here -->
 {% endblock %}

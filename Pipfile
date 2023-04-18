@@ -10,6 +10,7 @@ six = "==1.16.0"
 django-extensions = "*"
 graphviz = "*"
 pydotplus = "*"
+numpy = "*"
 
 [dev-packages]
 
